@@ -1,0 +1,8 @@
+C:\Users\Setsumi\Documents\SharpDevelop Projects\mhdcka\mhdcka\obj\Debug\mhdcka.csprojResolveAssemblyReference.cache
+C:\Users\Setsumi\Documents\SharpDevelop Projects\mhdcka\mhdcka\obj\Debug\MainForm.resources
+C:\Users\Setsumi\Documents\SharpDevelop Projects\mhdcka\mhdcka\obj\Debug\mhdcka.csproj.GenerateResource.Cache
+C:\Users\Setsumi\Documents\SharpDevelop Projects\mhdcka\mhdcka\bin\Debug\mhdcka.exe.config
+C:\Users\Setsumi\Documents\SharpDevelop Projects\mhdcka\mhdcka\bin\Debug\mhdcka.exe
+C:\Users\Setsumi\Documents\SharpDevelop Projects\mhdcka\mhdcka\bin\Debug\mhdcka.pdb
+C:\Users\Setsumi\Documents\SharpDevelop Projects\mhdcka\mhdcka\obj\Debug\mhdcka.exe
+C:\Users\Setsumi\Documents\SharpDevelop Projects\mhdcka\mhdcka\obj\Debug\mhdcka.pdb
