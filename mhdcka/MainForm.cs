@@ -8,8 +8,10 @@ partial class MainForm : Form
 {
 
 	static SolidBrush white = new SolidBrush(Color.White);
+	static SolidBrush black = new SolidBrush(Color.Black);
 	static Pen whitePen = new Pen(Color.White);
 	static Pen zastavkaPen = new Pen(Color.MediumSlateBlue);
+	static SolidBrush deleteBrush = new SolidBrush(Color.DarkRed);
 	static SolidBrush zastavkaBrush2 = new SolidBrush(Color.MediumSlateBlue);
 	static SolidBrush zastavkaBrush = new SolidBrush(Color.AliceBlue);
 	static Font drawFont1 = new Font("Arial", 12);
@@ -23,7 +25,11 @@ partial class MainForm : Form
 	
 	static int rezim = 1;
 	
+	static SolidBrush background;
+	
 	static bool holding = false;
+	static bool deletingLine = false;
+	static bool deletingZast = false;
 	
 	static int newLineX1, newLineY1, newLineX2, newLineY2;
 	static Zastavka startZast;
@@ -47,14 +53,53 @@ partial class MainForm : Form
 	void Button5Click(object sender, EventArgs e)
 	{
 		rezim = 5;
+	}	
+	void Button6Click(object sender, EventArgs e)
+	{
+		if (deletingLine){
+			deletingLine = false;
+			button6.Text = "Zmazať čiaru";
+		} else {
+			deletingLine = true;
+			button6.Text = "Ukončiť mazanie";
+		}
+		Invalidate();
+		Update();
+	}
+	void Button7Click(object sender, EventArgs e)
+	{
+		if (deletingZast){
+			deletingZast = false;
+			button7.Text = "Zmazať zastávku";
+		} else {
+			deletingZast = true;
+			button7.Text = "Ukončiť mazanie";
+		}
+		Invalidate();
+		Update();
+	}
+	void Button8Click(object sender, EventArgs e)
+	{
+		if (background.Color == Color.White){
+			background = black;
+			button8.BackColor = Color.White;
+		} else {
+			background = white;
+			button8.BackColor = Color.Black;
+		}
+		Invalidate();
+		Update();
 	}
 	
 	void MainFormPaint(object sender, PaintEventArgs e)
 	{
 		Graphics g = e.Graphics;
 		
-		g.FillRectangle(white, 0,0, 865,600);
+		g.FillRectangle(background, 0,0, 865,600);
 		
+		if (zastavky.Count == 0){
+			g.DrawString("Kliknutím na plochu vytvoríš zastávku!", drawFont1, zastavkaBrush2, 300, 270, null);
+		}
 		if (linkaClicked != 0){
 			g.DrawString("Tu môžeš vybrať \nlinke novú farbu!", drawFont1, zastavkaBrush2, 10, 230, null);
 			int x = 20;
@@ -69,12 +114,18 @@ partial class MainForm : Form
 					y += 30;
 				}
 			}						
-			g.DrawString("Upravuješ linku č." + linkaClicked, drawFont1, zastavkaBrush2, 698, 160, null);
+			g.DrawString("Upravuješ linku č." + linkaClicked + "\n\n  Trasu jej rozšíriš\n        kliknutím\n     na zastávku\na potiahnutím šípky\n  k ďalšje zastávke.\n\n     Časti trate vieš\n  zmazať po sltační\n          tlačidla\n     'Zmazať čiaru'", drawFont1, zastavkaBrush2, 698, 160, null);
 			
 		} else {
-			g.DrawString("Tu sú tvoje linky!", drawFont1, zastavkaBrush2, 707, 160, null);		
+			g.DrawString("Tu sú tvoje linky.\nKlikni na nejakú!", drawFont1, zastavkaBrush2, 707, 160, null);		
 		}
 		
+		if (linkaClicked != 0){
+			button6.Visible = true;
+		} else {
+			button6.Visible = false;			
+		}		
+				
 		foreach (var l in linky){
 			l.kresli(g);
 		}
@@ -121,12 +172,30 @@ partial class MainForm : Form
 		{
 			linky.Add(new Linka(i+1, pens[i]));
 		}
+		
+		background = white;
 	}
 	
 	void MainFormMouseClick(object sender, MouseEventArgs e)
 	{
 		if ((rezim == 3 || rezim ==1)) {
-			if (e.X >= 700 && e.Y >= 45 && e.Y <= 185){		
+			if (deletingLine && linky[linkaClicked-1].zmazCiaru(e.X, e.Y)){				
+				Invalidate();
+				Update();
+			} else if (deletingZast && closeTo(e.X, e.Y) != null){
+				Zastavka z = closeTo(e.X, e.Y);
+				zastavky.Remove(z);
+				foreach (var l in linky)
+				{
+					l.zmazZastavku(z);
+				}
+				Invalidate();
+				Update();
+			} else if (linkaClicked != 0 && e.X <= 140 && e.Y >= 45 && e.Y <= 230){
+				linky[linkaClicked-1].changeColour(findColour(e.X, e.Y));
+				Invalidate();
+				Update();
+			} else if (e.X >= 700 && e.Y >= 45 && e.Y <= 185){		
 				linkaClicked = findClickedLinka(e.X, e.Y);
 				Invalidate();
 				Update();
@@ -153,7 +222,12 @@ partial class MainForm : Form
 	void MainFormMouseDown(object sender, MouseEventArgs e)
 	{				
 		Zastavka z = closeTo(e.X, e.Y);
-		if ((rezim == 3 || rezim ==1) && z != null && zastavky.Count >= 2 && linkaClicked != 0){
+		if ((rezim == 3 || rezim ==1) 
+		&& !deletingZast
+		&& !deletingLine
+		&& z != null 
+		&& zastavky.Count >= 2 
+		&& linkaClicked != 0){
 			holding = true;
 			startZast = z;
 			newLineX1 = z.X;
@@ -214,16 +288,37 @@ partial class MainForm : Form
 		}
 		return 0;
 	}
+	
+	Pen findColour(int X, int Y){
+		int xP = 20;
+		int yP = 60;
+		for (int i = 0; i < pens.Count; i++)
+		{
+			if (X >= xP && X <= xP + 30 
+				&&
+				Y >= yP - 10 && Y <= yP + 10){
+				return pens[i];
+			}
+			xP += 40;
+			if ((i % 3)  == 2){
+				xP = 20;
+				yP += 30;
+			}
+		}
+		return null;
+	}
 
 	class Linka {		
 		List<Zastavka> mojeZastavky;
 		public int name;
 		public Pen colour;
+		public List<Point> delCoords;
 		
 		public Linka(int nName, Pen pen){
 			name = nName;
 			colour = pen;
 			mojeZastavky = new List<Zastavka>();
+			delCoords = new List<Point>();
 		}
 		
 		public void kresli(Graphics g){
@@ -241,7 +336,8 @@ partial class MainForm : Form
 			}
 		
 			colour.Width = 5;
-			Point start, center, end;
+			Point start, center, end;			
+						
 			for (int i = 0; i < mojeZastavky.Count - 1; i+=2)
 			{	
 				start = new Point(mojeZastavky[i].X, mojeZastavky[i].Y);
@@ -251,8 +347,14 @@ partial class MainForm : Form
 			    
 			    Point[] curvePoints = {start, center, end};
 			    g.DrawCurve(colour, curvePoints);
+			    
+			    if (deletingLine && (linkaClicked == name)){
+			    	g.FillEllipse(white, center.X-10, center.Y-10, 30, 30);
+					g.DrawEllipse(colour, center.X-10, center.Y-10, 30, 30);
+					g.DrawString("X", drawFontBold, deleteBrush, center.X-4, center.Y-4, null);	
+			    }			   
 			} 
-			
+					
 		}
 		
 		Point getCenter(int X1, int Y1, int X2, int Y2){
@@ -280,10 +382,61 @@ partial class MainForm : Form
 		}
 		
 		public void pridajCiaru(Zastavka z1, Zastavka z2){
+			Point point = getCenter(z1.X, z1.Y, z2.X, z2.Y);
+			delCoords.Add(point);
 			mojeZastavky.Add(z2);
 			mojeZastavky.Add(z1);
 		}
+				
+		public bool zmazCiaru(int X, int Y){
+			int index = -1;
+			
+			for (int i = 0; i < delCoords.Count; i++)
+			{
+				int X2 = delCoords[i].X+5;
+				int Y2 = delCoords[i].Y+5;
+				int dist = (X-X2)*(X-X2) + (Y-Y2)*(Y-Y2);
+				
+				if (dist <= 20*20){
+					index = i;
+					break;
+				}
+			}
+			
+			if (index >= 0){
+				delCoords.RemoveAt(index);
+				mojeZastavky.RemoveAt(index*2);
+				mojeZastavky.RemoveAt(index*2);
+				return true;
+			}			
+			return false;
+		}
+
+		public void zmazZastavku(Zastavka z){
+			List<int> index = new List<int>();
+			for (int i = 0; i < mojeZastavky.Count; i += 2)
+			{
+				if ((mojeZastavky[i].X == z.X && mojeZastavky[i].Y == z.Y) 
+					||
+					(mojeZastavky[i+1].X == z.X && mojeZastavky[i+1].Y == z.Y)){
+					index.Add(i);
+				}
+			}
+			if (index.Count > 0){
+				index.Reverse();
+				foreach (var i in index)
+			    {
+				    mojeZastavky.RemoveAt(i+1);
+				    mojeZastavky.RemoveAt(i);				
+			    }
+			}
+		}
 		
+		public void changeColour(Pen p){
+			if (p != null){			
+				colour = p;
+			}
+		}
 	}
 	
 	class Zastavka {
@@ -302,6 +455,9 @@ partial class MainForm : Form
 		public void kresli(Graphics g){
 			g.DrawEllipse(zastavkaPen, X-r, Y-r, 2*r, 2*r);
 			g.FillEllipse(zastavkaBrush, X-r, Y-r, 2*r, 2*r);
+			if (deletingZast){
+				g.DrawString("X", drawFontBold, deleteBrush, X-r+1, Y-r, null);
+			}
 		}
 		
 		public bool isClose(int X, int Y){
