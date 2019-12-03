@@ -30,13 +30,20 @@ partial class MainForm : Form
 	static bool holding = false;
 	static bool deletingLine = false;
 	static bool deletingZast = false;
+	static bool namingZast = false;
+	
+	static bool[] errors = new bool[3];
+	static List<string> errorMsgs = new List<string>();
 	
 	static int newLineX1, newLineY1, newLineX2, newLineY2;
 	static Zastavka startZast;
+	
+	static int level = 1;
 
 	void Button1Click(object sender, EventArgs e)
 	{
 		rezim = 1;
+		button7.Visible = true;
 	}
 	void Button2Click(object sender, EventArgs e)
 	{
@@ -45,6 +52,7 @@ partial class MainForm : Form
 	void Button3Click(object sender, EventArgs e)
 	{
 		rezim = 3;
+		button7.Visible = true;
 	}
 	void Button4Click(object sender, EventArgs e)
 	{
@@ -52,7 +60,22 @@ partial class MainForm : Form
 	}
 	void Button5Click(object sender, EventArgs e)
 	{
-		rezim = 5;
+		errors = checkLinky();
+		bool error = false;
+		foreach (var er in errors)
+		{
+			if (er){	
+				error = true;
+			}
+		}
+		if (!error){
+			rezim = 5;
+			linkaClicked = 0;
+			button7.Visible = false;
+		} 
+		Invalidate();
+		Update();
+		
 	}	
 	void Button6Click(object sender, EventArgs e)
 	{
@@ -116,7 +139,7 @@ partial class MainForm : Form
 			}						
 			g.DrawString("Upravuješ linku č." + linkaClicked + "\n\n  Trasu jej rozšíriš\n        kliknutím\n     na zastávku\na potiahnutím šípky\n  k ďalšje zastávke.\n\n     Časti trate vieš\n  zmazať po sltační\n          tlačidla\n     'Zmazať čiaru'", drawFont1, zastavkaBrush2, 698, 160, null);
 			
-		} else {
+		} else if (rezim == 1 || rezim == 3){
 			g.DrawString("Tu sú tvoje linky.\nKlikni na nejakú!", drawFont1, zastavkaBrush2, 707, 160, null);		
 		}
 		
@@ -139,6 +162,16 @@ partial class MainForm : Form
 			z.kresli(g);
 		}		
 		
+		
+		for (int i = 0; i < errors.Length; i++)
+		{
+			if (errors[i]){
+				g.DrawString(errorMsgs[i], drawFontBold, deleteBrush, 250, 200 + 30*i, null);
+			}
+		}
+		if (errors.Length > 0){
+			errors = new bool[3];
+		}
 	}
 	
 	void MainFormLoad(object sender, EventArgs e)
@@ -174,6 +207,10 @@ partial class MainForm : Form
 		}
 		
 		background = white;
+		
+		errorMsgs.Add("         Trať neobsahuje žiadne zastávky!");
+		errorMsgs.Add("  Trať ani jednej z liniek nie je definovaná!");
+		errorMsgs.Add("Jedna alebo viac tvojich liniek sú rozkúzkované!\n     Nevieme vytvoriť otázky kým ich nespojíš.");
 	}
 	
 	void MainFormMouseClick(object sender, MouseEventArgs e)
@@ -200,7 +237,7 @@ partial class MainForm : Form
 				Invalidate();
 				Update();
 			} else if (closeTo(e.X, e.Y) == null && !holding) {			
-				zastavky.Add(new Zastavka(e.X, e.Y));
+				zastavky.Add(new Zastavka(e.X, e.Y, zastavky.Count + 65));
 				Invalidate();
 				Update();
 			}
@@ -258,6 +295,18 @@ partial class MainForm : Form
 		}
 	}
 	
+	
+	void MainFormMouseDoubleClick(object sender, MouseEventArgs e)
+	{
+		if ((rezim == 1 || rezim == 3) && !holding){
+			Zastavka z = closeTo(e.X, e.Y);
+			if (z == null){
+				return;
+			}
+			namingZast = true;
+		}
+	}
+	
 	void spoj(Zastavka z1, Zastavka z2){
 		z1.spoj(z2);
 		z2.spoj(z1);
@@ -307,12 +356,34 @@ partial class MainForm : Form
 		}
 		return null;
 	}
+	
+	bool[] checkLinky(){
+		bool[] check = new bool[3];
+		if (zastavky.Count == 0){
+			check[0] = true;
+		}
+		int emptyLinky = 0;
+		foreach (var linka in linky)
+		{
+			if (!linka.spojita()){
+				check[2] = true;
+			} 
+			if (linka.isEmpty()){
+				emptyLinky += 1;
+			}
+		}
+		check[1] = emptyLinky == 9;
+		return check;
+	}
 
 	class Linka {		
 		List<Zastavka> mojeZastavky;
 		public int name;
 		public Pen colour;
 		public List<Point> delCoords;
+		
+		static bool[] visited;
+		static bool[][] matica;
 		
 		public Linka(int nName, Pen pen){
 			name = nName;
@@ -437,24 +508,88 @@ partial class MainForm : Form
 				colour = p;
 			}
 		}
+		
+		public bool isEmpty(){
+			return mojeZastavky.Count == 0;
+		}
+		
+		public bool spojita(){
+			if (isEmpty())
+		    {
+				return true;
+		    }
+			List<Zastavka> zast = new List<Zastavka>();
+			for (int i = 0; i < mojeZastavky.Count; i++)
+			{
+				if (!zast.Contains(mojeZastavky[i])){
+					zast.Add(mojeZastavky[i]);
+				}
+			}
+			matica = new bool[zast.Count][];
+			for (int i = 0; i < matica.Length; i++)
+			{
+				matica[i] = new bool[zast.Count];
+				for (int j = 0; j < matica.Length; j++)
+				{
+					matica[i][j] = false;
+				}
+			}
+			
+			for (int i = 0; i < mojeZastavky.Count; i += 2)
+			{
+				matica[zast.IndexOf(mojeZastavky[i])][zast.IndexOf(mojeZastavky[i+1])] = true;
+				matica[zast.IndexOf(mojeZastavky[i+1])][zast.IndexOf(mojeZastavky[i])] = true;
+			}
+			
+			visited = new bool[zast.Count]; 
+			for (int i = 0; i < zast.Count; i++)
+			{
+				
+				visited[i] = false;
+			}
+			int components = 0;
+	        for(int v = 0; v < zast.Count; ++v)  
+	        { 
+	            if(!visited[v])  
+	            { 
+	                DFSUtil(v); 
+	                components += 1;
+	            } 
+	        } 	   
+
+	        return components == 1;
+		}
+		
+		void DFSUtil(int v)  
+	    { 
+	        visited[v] = true; 
+	        for (int i = 0; i < matica.Length; i++)
+	        {
+	        	if (matica[v][i] && !visited[i]){
+	            	DFSUtil(i); 	   
+	        	}
+	        }  
+	  
+	    }
 	}
 	
-	class Zastavka {
-	
+	class Zastavka {	
 		public int X, Y, r;
 		string name;
 		public Dictionary<Zastavka, int> susedia;
 	
-		public Zastavka(int nX, int nY){
+		public Zastavka(int nX, int nY, int ord){
 			susedia = new Dictionary<Zastavka, int>();
 			X = nX;			
 			Y = nY;
 			r = 10;
+			name = (char)ord + "";
 		}		
 		
 		public void kresli(Graphics g){
 			g.DrawEllipse(zastavkaPen, X-r, Y-r, 2*r, 2*r);
 			g.FillEllipse(zastavkaBrush, X-r, Y-r, 2*r, 2*r);
+			g.DrawString(name, drawFont1, zastavkaBrush2, X-r+2, Y-r+1, null);
 			if (deletingZast){
 				g.DrawString("X", drawFontBold, deleteBrush, X-r+1, Y-r, null);
 			}

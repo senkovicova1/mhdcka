@@ -132,6 +132,7 @@ partial class MainForm
 		this.Load += new System.EventHandler(this.MainFormLoad);
 		this.Paint += new System.Windows.Forms.PaintEventHandler(this.MainFormPaint);
 		this.MouseClick += new System.Windows.Forms.MouseEventHandler(this.MainFormMouseClick);
+		this.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.MainFormMouseDoubleClick);
 		this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.MainFormMouseDown);
 		this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.MainFormMouseMove);
 		this.MouseUp += new System.Windows.Forms.MouseEventHandler(this.MainFormMouseUp);
