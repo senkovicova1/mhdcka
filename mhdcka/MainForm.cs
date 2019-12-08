@@ -40,7 +40,7 @@ partial class MainForm : Form
 	static int newLineX1, newLineY1, newLineX2, newLineY2;
 	static Zastavka startZast;
 	
-	static int level = 9;
+	static int level = 0;
 	static string question;
 	static string answer;
 	static int correctAnswer;
@@ -249,7 +249,7 @@ partial class MainForm : Form
 		
 		if (rezim == 5){
 			if (level == 10 && correctAnswer != 0){
-				g.DrawString("Koniec testu!\nSkóre: " + body + "/10\nAk si želáš test zopakovať, klikni na tlačidlo 'Ďalšia otázka'.",drawFontBold, zastavkaBrush2, 200, 200, null);
+				g.DrawString("                                     Koniec testu!\n                                       Skóre: " + body + "/10\nAk si želáš test zopakovať, klikni na tlačidlo 'Ďalšia otázka'.",drawFontBold, zastavkaBrush2, 170, 200, null);
 			}
 			g.DrawString("Odpoveď:", drawFontBold, zastavkaBrush2, 150, 525, null);
 			g.DrawString(question, drawFont1, zastavkaBrush2, 8, 40, null);
@@ -257,7 +257,7 @@ partial class MainForm : Form
 			if (correctAnswer == 1){
 		    	g.DrawString("Správna odpoveď!\n         +1 bod", drawFont2, zastavkaBrush2, 350, 470, null);
 		    } else if (correctAnswer == -1){
-		    	g.DrawString("Nesprávna odpoveď!\n          Správne: " + answer, drawFont2, zastavkaBrush2, 330, 470, null);
+		    	g.DrawString("Nesprávna odpoveď!\n        Správne: " + answer, drawFont2, zastavkaBrush2, 330, 470, null);
 		    }
 		}
 	}
