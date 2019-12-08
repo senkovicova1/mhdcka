@@ -327,8 +327,21 @@ partial class MainForm : Form
 				linkaClicked = findClickedLinka(e.X, e.Y);
 				Invalidate();
 				Update();
-			} else if (closeTo(e.X, e.Y) == null && !holding) {			
-				zastavky.Add(new Zastavka(e.X, e.Y, zastavky.Count + 65));
+			} else if (closeTo(e.X, e.Y) == null && !holding) {		
+				int name = 65;
+				List<string> names = new List<string>();
+				for (int i = 0; i < zastavky.Count; i++)
+				{
+					names.Add(zastavky[i].name);
+				}
+				for (int i = 0; i < 27; i++)
+				{
+					if (!names.Contains((char)(65+i) + "")){
+						name = 65 + i;
+						break;
+					}
+				}
+				zastavky.Add(new Zastavka(e.X, e.Y, name));
 				Invalidate();
 				Update();
 			}
