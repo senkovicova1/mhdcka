@@ -10,6 +10,9 @@ partial class MainForm
 	private System.Windows.Forms.Button button6;
 	private System.Windows.Forms.Button button7;
 	private System.Windows.Forms.Button button8;
+	private System.Windows.Forms.TextBox textBox1;
+	private System.Windows.Forms.Button button9;
+	private System.Windows.Forms.Button button10;
 
 	protected override void Dispose(bool disposing)
 	{
@@ -30,6 +33,9 @@ partial class MainForm
 		this.button6 = new System.Windows.Forms.Button();
 		this.button7 = new System.Windows.Forms.Button();
 		this.button8 = new System.Windows.Forms.Button();
+		this.textBox1 = new System.Windows.Forms.TextBox();
+		this.button9 = new System.Windows.Forms.Button();
+		this.button10 = new System.Windows.Forms.Button();
 		this.SuspendLayout();
 		// 
 		// button1
@@ -113,11 +119,41 @@ partial class MainForm
 		this.button8.UseVisualStyleBackColor = false;
 		this.button8.Click += new System.EventHandler(this.Button8Click);
 		// 
+		// textBox1
+		// 
+		this.textBox1.Location = new System.Drawing.Point(256, 528);
+		this.textBox1.Name = "textBox1";
+		this.textBox1.Size = new System.Drawing.Size(352, 20);
+		this.textBox1.TabIndex = 9;
+		// 
+		// button9
+		// 
+		this.button9.Location = new System.Drawing.Point(624, 528);
+		this.button9.Name = "button9";
+		this.button9.Size = new System.Drawing.Size(120, 23);
+		this.button9.TabIndex = 10;
+		this.button9.Text = "Overiť";
+		this.button9.UseVisualStyleBackColor = true;
+		this.button9.Click += new System.EventHandler(this.Button9Click);
+		// 
+		// button10
+		// 
+		this.button10.Location = new System.Drawing.Point(624, 496);
+		this.button10.Name = "button10";
+		this.button10.Size = new System.Drawing.Size(211, 23);
+		this.button10.TabIndex = 12;
+		this.button10.Text = "Ďalšia otázka";
+		this.button10.UseVisualStyleBackColor = true;
+		this.button10.Click += new System.EventHandler(this.Button10Click);
+		// 
 		// MainForm
 		// 
 		this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 		this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		this.ClientSize = new System.Drawing.Size(849, 562);
+		this.Controls.Add(this.button10);
+		this.Controls.Add(this.button9);
+		this.Controls.Add(this.textBox1);
 		this.Controls.Add(this.button8);
 		this.Controls.Add(this.button7);
 		this.Controls.Add(this.button6);
@@ -137,6 +173,7 @@ partial class MainForm
 		this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.MainFormMouseMove);
 		this.MouseUp += new System.Windows.Forms.MouseEventHandler(this.MainFormMouseUp);
 		this.ResumeLayout(false);
+		this.PerformLayout();
 
 	}
 

@@ -3,6 +3,7 @@ using System.IO;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Collections.Generic;
+using System.Linq;
 
 partial class MainForm : Form
 {
@@ -15,6 +16,7 @@ partial class MainForm : Form
 	static SolidBrush zastavkaBrush2 = new SolidBrush(Color.MediumSlateBlue);
 	static SolidBrush zastavkaBrush = new SolidBrush(Color.AliceBlue);
 	static Font drawFont1 = new Font("Arial", 12);
+	static Font drawFont2 = new Font("Arial", 14);
 	static Font drawFontBold = new Font("Arial", 14, FontStyle.Bold);
 		
 	static List<Pen> pens;
@@ -38,12 +40,23 @@ partial class MainForm : Form
 	static int newLineX1, newLineY1, newLineX2, newLineY2;
 	static Zastavka startZast;
 	
-	static int level = 1;
+	static int level = 9;
+	static string question;
+	static string answer;
+	static int correctAnswer;
+	static int body = 0;
+		
+	Random rnd = new Random();
 
 	void Button1Click(object sender, EventArgs e)
 	{
 		rezim = 1;
 		button7.Visible = true;
+		textBox1.Visible = false;
+		button9.Visible = false;
+		button10.Visible = false;
+		Invalidate();
+		Update();
 	}
 	void Button2Click(object sender, EventArgs e)
 	{
@@ -53,6 +66,9 @@ partial class MainForm : Form
 	{
 		rezim = 3;
 		button7.Visible = true;
+		textBox1.Visible = false;
+		button9.Visible = false;
+		button10.Visible = false;
 	}
 	void Button4Click(object sender, EventArgs e)
 	{
@@ -72,6 +88,9 @@ partial class MainForm : Form
 			rezim = 5;
 			linkaClicked = 0;
 			button7.Visible = false;
+			textBox1.Visible = true;
+			button9.Visible = true;
+			generateQuestion();
 		} 
 		Invalidate();
 		Update();
@@ -110,6 +129,61 @@ partial class MainForm : Form
 			background = white;
 			button8.BackColor = Color.Black;
 		}
+		Invalidate();
+		Update();
+	}
+	void Button9Click(object sender, EventArgs e)
+	{
+		if (level == 3){
+			string[] str = answer.Split('-');
+			for (int i = 0; i < str.Length; i++)
+			{
+				if (str[i].ToUpper() == textBox1.Text.ToUpper()){
+					correctAnswer = 1;
+					body += 1;
+				}
+			}
+			if (correctAnswer == 0){
+				correctAnswer = -1;
+			}
+		} else if (level == 9){
+			if (textBox1.Text.Split('-').OrderBy(a => a).SequenceEqual(answer.Split('-').OrderBy(a => a))){
+				correctAnswer = 1;
+				body += 1;
+			} else {
+				correctAnswer = -1;
+			}
+		} else if (level == 10){
+			string[] cesty = answer.Split('*');
+			foreach (var cesta in cesty)
+			{
+				if (textBox1.Text.Split('-').OrderBy(a => a).SequenceEqual(cesta.Split('-').OrderBy(a => a))){
+					correctAnswer = 1;
+					body += 1;
+				}
+			}
+			if (correctAnswer == 0){
+				correctAnswer = -1;
+			}
+			
+		} else {
+			if (textBox1.Text.TrimStart().TrimEnd().ToUpper() == answer.ToUpper()){				
+				correctAnswer = 1;
+				body += 1;
+			} else {
+				correctAnswer = -1;
+			}
+		}
+		button10.Visible = true;
+		Invalidate();
+		Update();
+	}
+	void Button10Click(object sender, EventArgs e)
+	{
+		if (level == 10) {
+			level = 0;
+		}
+		generateQuestion();
 		Invalidate();
 		Update();
 	}
@@ -166,11 +240,25 @@ partial class MainForm : Form
 		for (int i = 0; i < errors.Length; i++)
 		{
 			if (errors[i]){
-				g.DrawString(errorMsgs[i], drawFontBold, deleteBrush, 250, 200 + 30*i, null);
+				g.DrawString(errorMsgs[i], drawFontBold, deleteBrush, 200, 200 + 30*i, null);
 			}
 		}
 		if (errors.Length > 0){
 			errors = new bool[3];
+		}
+		
+		if (rezim == 5){
+			if (level == 10 && correctAnswer != 0){
+				g.DrawString("Koniec testu!\nSkóre: " + body + "/10\nAk si želáš test zopakovať, klikni na tlačidlo 'Ďalšia otázka'.",drawFontBold, zastavkaBrush2, 200, 200, null);
+			}
+			g.DrawString("Odpoveď:", drawFontBold, zastavkaBrush2, 150, 525, null);
+			g.DrawString(question, drawFont1, zastavkaBrush2, 8, 40, null);
+			g.DrawString("Skóre: " + body + "/10", drawFontBold, zastavkaBrush2, 710, 170, null);
+			if (correctAnswer == 1){
+		    	g.DrawString("Správna odpoveď!\n         +1 bod", drawFont2, zastavkaBrush2, 350, 470, null);
+		    } else if (correctAnswer == -1){
+		    	g.DrawString("Nesprávna odpoveď!\n          Správne: " + answer, drawFont2, zastavkaBrush2, 330, 470, null);
+		    }
 		}
 	}
 	
@@ -207,10 +295,13 @@ partial class MainForm : Form
 		}
 		
 		background = white;
+		textBox1.Visible = false;
+		button9.Visible = false;
+		button10.Visible = false;
 		
-		errorMsgs.Add("         Trať neobsahuje žiadne zastávky!");
-		errorMsgs.Add("  Trať ani jednej z liniek nie je definovaná!");
-		errorMsgs.Add("Jedna alebo viac tvojich liniek sú rozkúzkované!\n     Nevieme vytvoriť otázky kým ich nespojíš.");
+		errorMsgs.Add("                  Trať neobsahuje žiadne zastávky!");
+		errorMsgs.Add("Na spustenie otázok musíš definovať aspoň dve trate!");
+		errorMsgs.Add("    Jedna alebo viac tvojich liniek sú rozkúzkované!\n        Nevieme vytvoriť otázky kým ich nespojíš.");
 	}
 	
 	void MainFormMouseClick(object sender, MouseEventArgs e)
@@ -372,12 +463,306 @@ partial class MainForm : Form
 				emptyLinky += 1;
 			}
 		}
-		check[1] = emptyLinky == 9;
+		check[1] = emptyLinky >= 8;
 		return check;
+	}
+	
+	void generateQuestion(){
+		correctAnswer = 0;
+		level += 1;
+		textBox1.Text = "";
+		button10.Visible = false;
+		answer = "";
+		
+		switch (level)
+		{
+			case 1:
+				question1();
+				break;
+			case 2:
+				question2();
+				break;
+			case 3:
+				question3();
+				break;
+			case 4:
+				question4();
+				break;
+			case 5:
+				question5();
+				break;
+			case 6:
+				question6();
+				break;
+			case 7:
+				question7();
+				break;
+			case 8:
+				question8();
+				break;
+			case 9:
+				question9();
+				break;
+			case 10:
+				question10();
+				break;
+			default:
+				level = 0;
+				break;
+		}
+	}
+	
+	void question1(){
+		Linka l = linky[rnd.Next(0, linky.Count)];
+		while (l.isEmpty()){
+			l = linky[rnd.Next(0, linky.Count)];
+		}
+		question = "Otázka č.1: Koľko zastávok má linka č." + l.name + "?";
+		answer = new HashSet<Zastavka>(l.mojeZastavky).Count + "";
+	}
+	
+	void question2(){
+		Linka l1 = linky[rnd.Next(0, linky.Count)];
+		while (l1.isEmpty()){
+			l1 = linky[rnd.Next(0, linky.Count)];
+		}
+		Linka l2 = linky[rnd.Next(0, linky.Count)];
+		while (l2.isEmpty() || l1.name == l2.name){
+			l2 = linky[rnd.Next(0, linky.Count)];
+		}
+		question = "Otázka č.2: Má linka č." + l1.name + " viac zastávok ako linka č." + l2.name + "?\n                   (Napíšte 'áno' alebo 'nie'.)";
+		if (new HashSet<Zastavka>(l1.mojeZastavky).Count > new HashSet<Zastavka>(l2.mojeZastavky).Count){
+			answer = "áno";
+		} else {
+			answer = "nie";
+		}
+	}
+	
+	void question3(){
+		List<Linka> lMax = new List<Linka>();
+		lMax.Add(linky[0]);
+		for (int i = 1; i < linky.Count; i++)
+		{
+			if (new HashSet<Zastavka>(lMax[0].mojeZastavky).Count < new HashSet<Zastavka>(linky[i].mojeZastavky).Count){
+				lMax.Clear();
+				lMax.Add(linky[i]);
+			} else if (new HashSet<Zastavka>(lMax[0].mojeZastavky).Count == new HashSet<Zastavka>(linky[i].mojeZastavky).Count){
+				lMax.Add(linky[i]);
+			}
+		}
+		question = "Otázka č.3: Ktorá linka má najviac zastávok?\n                    (Napíšte číslo linky. Ak je možností viac, vyberte jednu.)";
+		foreach (var l in lMax)
+		{
+			answer += "-" + l.name;
+		}
+		answer = answer.Remove(0,1);
+	}
+	
+	void question4(){
+		Zastavka z1 = zastavky[rnd.Next(0, zastavky.Count)];
+		Zastavka z2 = zastavky[rnd.Next(0, zastavky.Count)];
+		while (z1.name == z2.name){
+			z2 = zastavky[rnd.Next(0, zastavky.Count)];
+		}
+		question = "Otázka č.4: Vieme sa zo zastávky " + z1.name + " dostať na zastávku " + z2.name + " len po jednej linke?\n                    (Napíšte 'áno' alebo 'nie'.)";
+		foreach (var l in linky)
+		{
+			if (l.mojeZastavky.Contains(z1) && l.mojeZastavky.Contains(z2)){
+				answer = "áno";
+				return;
+			}
+		}
+		answer = "nie";
+	}
+	
+	void question5(){
+		Zastavka z1 = zastavky[rnd.Next(0, zastavky.Count)];
+		Zastavka z2 = zastavky[rnd.Next(0, zastavky.Count)];
+		while (z1.name == z2.name){
+			z2 = zastavky[rnd.Next(0, zastavky.Count)];
+		}
+		
+		question =  "Otázka č.5: Vieme sa zo zastávky " + z1.name + " nejako dostať na zastávku " + z2.name + " ?\n                    (Napíšte 'áno' alebo 'nie'.)";
+		if (BFS(z1.name, z2.name, linky) > 0){
+			answer = "áno";
+		} else {
+			answer = "nie";		
+		}
+	}
+	
+	void question6(){
+		Linka l = linky[rnd.Next(0, linky.Count)];
+		while (l.isEmpty()){
+			l = linky[rnd.Next(0, linky.Count)];
+		}
+		Zastavka z1 = l.mojeZastavky[rnd.Next(0, l.mojeZastavky.Count)];
+		Zastavka z2 = l.mojeZastavky[rnd.Next(0, l.mojeZastavky.Count)];
+		while (z1.name == z2.name){
+			z2 = l.mojeZastavky[rnd.Next(0, l.mojeZastavky.Count)];
+		}
+		
+		question = "Otázka č.6: Koľko zastávok musíme prejsť\n                    aby sme sa zo zastávky " + z1.name + " dostali na zastávku " + z2.name + " po linke " + l.name +" najrýchlejšie?\n                    (Vrátane zastávky z ktorej vychádzame.)";
+		List<Linka> lines = new List<Linka>();
+		lines.Add(l);
+		answer = BFS(z1.name, z2.name, lines) + "";
+	}
+	
+	void question7(){
+		Zastavka z1 = zastavky[rnd.Next(0, zastavky.Count)];
+		Zastavka z2 = zastavky[rnd.Next(0, zastavky.Count)];
+		while (z1.name == z2.name){
+			z2 = zastavky[rnd.Next(0, zastavky.Count)];
+		}
+		question = "Otázka č.7: Koľko zastávok musíme prejsť\n                  aby sme sa zo zastávky " + z1.name + " dostali na zastávku " + z2.name + " najrýchlejšie?\n                (Vrátane zastávky z ktorej vychádzame. Ak sa na zastávku nevieme dostať, napíšte 0.)";
+		answer = BFS(z1.name, z2.name, linky) + "";
+	}
+	
+	void question8(){
+		Zastavka z1 = zastavky[rnd.Next(0, zastavky.Count)];
+		Zastavka z2 = zastavky[rnd.Next(0, zastavky.Count)];
+		while (z1.name == z2.name){
+			z2 = zastavky[rnd.Next(0, zastavky.Count)];
+		}
+		int number = rnd.Next(2, zastavky.Count - zastavky.Count/4);
+		question = "Otázka č.8: Vieme sa zo zastávky " + z1.name + " dostať na zastávku " + z2.name + " cez najviac " + number;
+		switch (number)
+		{
+			case 2:
+				question += " zastávky?\n                    (Vrátane zastávky z ktorej vychádzame. Napíšte 'áno' alebo 'nie'.)";
+				break;
+			case 3:
+				question += " zastávky?\n                    (Vrátane zastávky z ktorej vychádzame. Napíšte 'áno' alebo 'nie'.)";
+				break;
+			default:
+				question += " zastávok?\n                    (Vrátane zastávky z ktorej vychádzame. Napíšte 'áno' alebo 'nie'.)";
+				break;
+		}
+		if (BFS(z1.name, z2.name, linky) <= number){
+			answer = "áno";
+		} else {
+			answer = "nie";
+		}
+	}
+	
+	void question9(){
+		Zastavka z1 = zastavky[rnd.Next(0, zastavky.Count)];		
+		int number = rnd.Next(2, zastavky.Count/2);
+		question = "Otázka č.9: Napíšte všetky zastávky, na ktoré sa vieme zo zastávky " + z1.name + "\n                    dostať prejdením cez " + number + " alebo menej zastávok.\n                    (Vrátane zastávky z ktorej vychádzame. Názvy zastávok oddeľte pomlčkami.)";
+		answer = z1.name;
+		foreach (var z in zastavky)
+		{
+			int bfs = BFS(z1.name, z.name, linky);
+			if (z.name != z1.name && bfs <= number && bfs > 0){
+				answer += "-" + z.name;
+			}
+		}
+		
+	}
+	
+	void question10(){
+		Zastavka z1 = zastavky[rnd.Next(0, zastavky.Count)];
+		Zastavka z2 = zastavky[rnd.Next(0, zastavky.Count)];
+		while (z1.name == z2.name){
+			z2 = zastavky[rnd.Next(0, zastavky.Count)];
+		}
+		
+		Dictionary<string, HashSet<string>> list = new Dictionary<string, HashSet<string>>();
+		foreach (var l in linky)
+		{
+			for (int i = 0; i < l.mojeZastavky.Count; i+=2)
+			{
+				if (!list.ContainsKey(l.mojeZastavky[i].name)){
+					list[l.mojeZastavky[i].name] = new HashSet<string>();
+				} 
+				list[l.mojeZastavky[i].name].Add(l.mojeZastavky[i+1].name);
+				if (!list.ContainsKey(l.mojeZastavky[i+1].name)){
+					list[l.mojeZastavky[i+1].name] = new HashSet<string>();
+				} 
+				list[l.mojeZastavky[i+1].name].Add(l.mojeZastavky[i].name);
+			}			
+		}
+		foreach (var z in zastavky)
+		{
+			if (!list.ContainsKey(z.name)){
+				list[z.name] = new HashSet<string>();
+			} 
+		}
+		List<string> visited = new List<string>();
+		List<Tuple<string, string>> queue = new List<Tuple<string, string>>();
+		string cesta = z1.name;
+		queue.Add(new Tuple<string, string>(z1.name, cesta));
+		while (queue.Count > 0){
+			Tuple<string, string> t = queue[0];
+			queue.RemoveAt(0);
+			string zast = t.Item1;
+			cesta = t.Item2;
+			visited.Add(zast);
+			if (zast == z2.name){
+				answer += "*" + cesta;
+			}
+			foreach (var sused in list[zast])
+			{
+				if (!visited.Contains(sused)){
+					queue.Add(new Tuple<string, string>(sused, cesta + "-" + sused));
+				}
+			}			
+		}
+		
+		question = "Otázka č.10: Ktoré zastávky musíme prejsť aby sme sa zo zastávky " + z1.name + " dostali na zastávku " + z2.name + "\n                    najrýchlejšie?\n                    (Ak sa na zastávku nevieme dostať, napíšte 0. Ak je možností viac, vyberte jednu.)";
+		if (answer.Length == 0){
+			answer = "0";
+		} else {
+			answer = answer.Remove(0,1);
+		}
+	}
+	
+	int BFS(string start, string end, List<Linka> lines){
+		Dictionary<string, HashSet<string>> list = new Dictionary<string, HashSet<string>>();
+		foreach (var l in lines)
+		{
+			for (int i = 0; i < l.mojeZastavky.Count; i+=2)
+			{
+				if (!list.ContainsKey(l.mojeZastavky[i].name)){
+					list[l.mojeZastavky[i].name] = new HashSet<string>();
+				} 
+				list[l.mojeZastavky[i].name].Add(l.mojeZastavky[i+1].name);
+				if (!list.ContainsKey(l.mojeZastavky[i+1].name)){
+					list[l.mojeZastavky[i+1].name] = new HashSet<string>();
+				} 
+				list[l.mojeZastavky[i+1].name].Add(l.mojeZastavky[i].name);
+			}			
+		}
+		foreach (var z in zastavky)
+		{
+			if (!list.ContainsKey(z.name)){
+				list[z.name] = new HashSet<string>();
+			} 
+		}
+		List<string> visited = new List<string>();
+		List<Tuple<string, int>> queue = new List<Tuple<string, int>>();
+		int depth = 1;
+		queue.Add(new Tuple<string, int>(start, depth));
+		while (queue.Count > 0){
+			Tuple<string, int> t = queue[0];
+			queue.RemoveAt(0);
+			string zast = t.Item1;
+			depth = t.Item2;
+			visited.Add(zast);
+			if (zast == end){
+				return depth;
+			}
+			foreach (var sused in list[zast])
+			{
+				if (!visited.Contains(sused)){
+					queue.Add(new Tuple<string, int>(sused, depth+1));
+				}
+			}			
+		}
+		return 0;
 	}
 
 	class Linka {		
-		List<Zastavka> mojeZastavky;
+		public List<Zastavka> mojeZastavky;
 		public int name;
 		public Pen colour;
 		public List<Point> delCoords;
@@ -575,7 +960,7 @@ partial class MainForm : Form
 	
 	class Zastavka {	
 		public int X, Y, r;
-		string name;
+		public string name;
 		public Dictionary<Zastavka, int> susedia;
 	
 		public Zastavka(int nX, int nY, int ord){
