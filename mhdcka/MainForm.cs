@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Drawing;
 using System.Windows.Forms;
@@ -61,6 +61,24 @@ partial class MainForm : Form
 	void Button2Click(object sender, EventArgs e)
 	{
 		rezim = 2;
+
+		StreamReader myStream;
+		OpenFileDialog openFileDialog = new OpenFileDialog();
+		openFileDialog.Filter = "txt files (*.txt)|*.txt";
+		openFileDialog.FilterIndex = 2;
+		openFileDialog.InitialDirectory = Path.GetDirectoryName(Path.GetDirectoryName(Directory.GetCurrentDirectory()));
+
+		if (openFileDialog.ShowDialog() == DialogResult.OK)
+		{
+			if ((myStream = new StreamReader(openFileDialog.OpenFile())) != null)
+			{
+				// Code to write the stream goes here.
+
+				MessageBox.Show((string)myStream.ReadToEnd(), "this", MessageBoxButtons.OK);
+				myStream.Close();
+			}
+		}
+
 	}
 	void Button3Click(object sender, EventArgs e)
 	{
@@ -73,6 +91,23 @@ partial class MainForm : Form
 	void Button4Click(object sender, EventArgs e)
 	{
 		rezim = 4;
+
+		StreamWriter myStream;
+		SaveFileDialog saveFileDialog = new SaveFileDialog();
+		saveFileDialog.Filter = "txt files (*.txt)|*.txt";
+		saveFileDialog.FilterIndex = 2;
+		saveFileDialog.InitialDirectory = Path.GetDirectoryName(Path.GetDirectoryName(Directory.GetCurrentDirectory()));
+
+		if (saveFileDialog.ShowDialog() == DialogResult.OK)
+		{
+			if ((myStream = new StreamWriter(saveFileDialog.OpenFile())) != null)
+			{
+				// Code to write the stream goes here.
+
+				myStream.Write("text");
+				myStream.Close();
+			}
+		}
 	}
 	void Button5Click(object sender, EventArgs e)
 	{
