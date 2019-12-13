@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Drawing;
 using System.Windows.Forms;
@@ -61,7 +62,9 @@ partial class MainForm : Form
 	void Button2Click(object sender, EventArgs e)
 	{
 		rezim = 2;
-
+		
+		linky.Clear();
+		zastavky.Clear();
 		StreamReader myStream;
 		OpenFileDialog openFileDialog = new OpenFileDialog();
 		openFileDialog.Filter = "txt files (*.txt)|*.txt";
@@ -72,11 +75,25 @@ partial class MainForm : Form
 		{
 			if ((myStream = new StreamReader(openFileDialog.OpenFile())) != null)
 			{
-				// Code to write the stream goes here.
+				while(myStream.Peek() >= 0){
+					var line = myStream.ReadLine();
+					var variables = line.Split();
+					if(variables[0] == "z"){
+						zastavky.Add(new Zastavka(Convert.ToInt32(variables[1]), Convert.ToInt32(variables[2]), Convert.ToInt32(variables[3])));
+						}
+					else if(variables[0] == "l"){
+						linky.Add(new Linka(Convert.ToInt32(variables[1]), pens[Convert.ToInt32(variables[2])]));
+						linky[linky.Count-1].pridajUlozenuCiaru(new Zastavka(Convert.ToInt32(variables[3]), Convert.ToInt32(variables[4]), Convert.ToInt32(variables[5])),
+							new Zastavka(Convert.ToInt32(variables[6]), Convert.ToInt32(variables[7]), Convert.ToInt32(variables[8])),
+							new Point(Convert.ToInt32(variables[9]), Convert.ToInt32(variables[10])));
+						}
 
-				MessageBox.Show((string)myStream.ReadToEnd(), "this", MessageBoxButtons.OK);
+				}
+					
 				myStream.Close();
 			}
+			Invalidate();
+			Update();
 		}
 
 	}
@@ -102,9 +119,19 @@ partial class MainForm : Form
 		{
 			if ((myStream = new StreamWriter(saveFileDialog.OpenFile())) != null)
 			{
-				// Code to write the stream goes here.
+				var txt = "";
+				for(int i = 0; i < zastavky.Count; i++){
+					txt += "z" + " " + zastavky[i].getX() + " " + zastavky[i].getY() + " " + zastavky[i].getNameNumber() + "\n";
+				}
+				for(int i = 0; i < linky.Count; i++){
+					var zastavky = linky[i].getSuradniceZastavky();
+					var point = linky[i].getPoint();
+					txt += "l" + " " + linky[i].getName() + " " + linky[i].getColour() 
+						+ " " + zastavky[0] + " " + zastavky[1] + " " + zastavky[2] + " " + zastavky[3]  
+						+ " " + zastavky[4] + " " + zastavky[5] + " " + point[0] + " " + point[1] +"\n";
+				}
 
-				myStream.Write("text");
+				myStream.Write(txt);
 				myStream.Close();
 			}
 		}
@@ -1004,10 +1031,52 @@ partial class MainForm : Form
 	        }  
 	  
 	    }
+		public int getName(){
+			return this.name;
+		}
+
+		public int getColour(){
+			Predicate<Pen> allPen = myPen;
+			var actualPen = pens.FindIndex(allPen);
+			return actualPen;
+		}
+
+		private bool myPen(Pen p){
+			return p.Equals(colour);
+		}
+
+		public int[] getSuradniceZastavky(){
+			int[] suradnice = new int[6];
+			if (mojeZastavky.Count != 0){
+				suradnice[0] = mojeZastavky[0].getX();
+				suradnice[1] = mojeZastavky[0].getY();
+				suradnice[2] = mojeZastavky[0].getNameNumber();
+				suradnice[3] = mojeZastavky[1].getX();
+				suradnice[4] = mojeZastavky[1].getY();
+				suradnice[5] = mojeZastavky[1].getNameNumber();
+			}
+			return suradnice;
+		}
+
+		public int[] getPoint(){
+			int[] point = new int[2];
+			Trace.WriteLine(delCoords.Count);
+			if(delCoords.Count != 0){
+				point[0] = delCoords[0].X;
+				point[1] = delCoords[0].Y;
+			}
+			return point;
+		}
+
+		public void pridajUlozenuCiaru(Zastavka z1, Zastavka z2, Point point){
+			delCoords.Add(point);
+			mojeZastavky.Add(z2);
+			mojeZastavky.Add(z1);
+		}
 	}
 	
 	class Zastavka {	
-		public int X, Y, r;
+		public int X, Y, r, name_number;
 		public string name;
 		public Dictionary<Zastavka, int> susedia;
 	
@@ -1017,6 +1086,7 @@ partial class MainForm : Form
 			Y = nY;
 			r = 10;
 			name = (char)ord + "";
+			name_number = ord;
 		}		
 		
 		public void kresli(Graphics g){
@@ -1039,6 +1109,18 @@ partial class MainForm : Form
 				susedia[z] += 1;
 			}
 			
+		}
+
+		public int getX(){
+			return this.X;
+		}
+
+		public int getY(){
+			return this.Y;
+		}
+
+		public int getNameNumber(){
+			return this.name_number;
 		}
 			
 	}
