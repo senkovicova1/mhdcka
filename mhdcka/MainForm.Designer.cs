@@ -1,4 +1,4 @@
-﻿
+
 partial class MainForm
 {
 	private System.ComponentModel.IContainer components = null;
@@ -54,7 +54,7 @@ partial class MainForm
 		this.button2.Name = "button2";
 		this.button2.Size = new System.Drawing.Size(160, 25);
 		this.button2.TabIndex = 1;
-		this.button2.Text = "Načítať mapu (nie je implem.)";
+		this.button2.Text = "Načítať mapu";
 		this.button2.UseVisualStyleBackColor = true;
 		this.button2.Click += new System.EventHandler(this.Button2Click);
 		// 
@@ -64,7 +64,7 @@ partial class MainForm
 		this.button3.Name = "button3";
 		this.button3.Size = new System.Drawing.Size(160, 25);
 		this.button3.TabIndex = 2;
-		this.button3.Text = "Upraviť mapu(nie je implem.)";
+		this.button3.Text = "Upraviť mapu";
 		this.button3.UseVisualStyleBackColor = true;
 		this.button3.Click += new System.EventHandler(this.Button3Click);
 		// 
@@ -74,7 +74,7 @@ partial class MainForm
 		this.button4.Name = "button4";
 		this.button4.Size = new System.Drawing.Size(160, 25);
 		this.button4.TabIndex = 3;
-		this.button4.Text = "Uložiť mapu(nie je implem.)";
+		this.button4.Text = "Uložiť mapu";
 		this.button4.UseVisualStyleBackColor = true;
 		this.button4.Click += new System.EventHandler(this.Button4Click);
 		// 
