@@ -52,10 +52,17 @@ partial class MainForm : Form
 	void Button1Click(object sender, EventArgs e)
 	{
 		rezim = 1;
+		button6.Visible = true;
 		button7.Visible = true;
+		button8.Visible = true;
 		textBox1.Visible = false;
 		button9.Visible = false;
 		button10.Visible = false;
+		for(int i = 0; i < linky.Count; i++){
+			linky[i].mojeZastavky.Clear();
+			linky[i].delCoords.Clear();
+		}
+		zastavky.Clear();
 		Invalidate();
 		Update();
 	}
@@ -83,13 +90,19 @@ partial class MainForm : Form
 						}
 					else if(variables[0] == "l"){
 						linky.Add(new Linka(Convert.ToInt32(variables[1]), pens[Convert.ToInt32(variables[2])]));
-						linky[linky.Count-1].pridajUlozenuCiaru(new Zastavka(Convert.ToInt32(variables[3]), Convert.ToInt32(variables[4]), Convert.ToInt32(variables[5])),
-							new Zastavka(Convert.ToInt32(variables[6]), Convert.ToInt32(variables[7]), Convert.ToInt32(variables[8])),
-							new Point(Convert.ToInt32(variables[9]), Convert.ToInt32(variables[10])));
-						}
 
+						if (variables.Length > 3){
+							var index = Array.IndexOf(variables, "p");
+							for(int m = 3; m < index; m = m + 6){
+								linky[linky.Count-1].pridajUlozeneZastavky(new Zastavka(Convert.ToInt32(variables[m]), Convert.ToInt32(variables[m+1]), Convert.ToInt32(variables[m+2])),
+								new Zastavka(Convert.ToInt32(variables[m+3]), Convert.ToInt32(variables[m+4]), Convert.ToInt32(variables[m+5])));
+							}
+							for(int m = index+1; m < variables.Length; m = m + 2){
+								linky[linky.Count-1].pridajUlozenePoint(new Point(Convert.ToInt32(variables[m]), Convert.ToInt32(variables[m+1])));
+							}
+						}
+					}
 				}
-					
 				myStream.Close();
 			}
 			Invalidate();
@@ -105,6 +118,7 @@ partial class MainForm : Form
 		button9.Visible = false;
 		button10.Visible = false;
 	}
+
 	void Button4Click(object sender, EventArgs e)
 	{
 		rezim = 4;
@@ -124,11 +138,18 @@ partial class MainForm : Form
 					txt += "z" + " " + zastavky[i].getX() + " " + zastavky[i].getY() + " " + zastavky[i].getNameNumber() + "\n";
 				}
 				for(int i = 0; i < linky.Count; i++){
-					var zastavky = linky[i].getSuradniceZastavky();
-					var point = linky[i].getPoint();
-					txt += "l" + " " + linky[i].getName() + " " + linky[i].getColour() 
-						+ " " + zastavky[0] + " " + zastavky[1] + " " + zastavky[2] + " " + zastavky[3]  
-						+ " " + zastavky[4] + " " + zastavky[5] + " " + point[0] + " " + point[1] +"\n";
+					int[] zastavky = linky[i].getSuradniceZastavky();
+					int[] point = linky[i].getPoint();
+					txt += "l" + " " + linky[i].getName() + " " + linky[i].getColour();
+					for(int m = 0; m < zastavky.Length; m++){
+						txt += " " + zastavky[m];
+					}
+					for(int n = 0; n < point.Length; n++){
+						if(n == 0)
+							txt += " p";
+						txt += " " + point[n];
+					}
+					txt += "\n";
 				}
 
 				myStream.Write(txt);
@@ -1046,32 +1067,41 @@ partial class MainForm : Form
 		}
 
 		public int[] getSuradniceZastavky(){
-			int[] suradnice = new int[6];
+			int[] suradnice = new int[0];
 			if (mojeZastavky.Count != 0){
-				suradnice[0] = mojeZastavky[0].getX();
-				suradnice[1] = mojeZastavky[0].getY();
-				suradnice[2] = mojeZastavky[0].getNameNumber();
-				suradnice[3] = mojeZastavky[1].getX();
-				suradnice[4] = mojeZastavky[1].getY();
-				suradnice[5] = mojeZastavky[1].getNameNumber();
+				suradnice = new int[mojeZastavky.Count*3];
+				var a = 0;
+				for(int i = 0; i < mojeZastavky.Count; i++){
+					suradnice[a] = mojeZastavky[i].getX();
+					suradnice[a+1] = mojeZastavky[i].getY();
+					suradnice[a+2] = mojeZastavky[i].getNameNumber();
+					a = a+3;
+				}
 			}
 			return suradnice;
 		}
 
 		public int[] getPoint(){
-			int[] point = new int[2];
-			Trace.WriteLine(delCoords.Count);
+			int[] point = new int[0];
 			if(delCoords.Count != 0){
-				point[0] = delCoords[0].X;
-				point[1] = delCoords[0].Y;
+				point = new int[delCoords.Count*2];
+				var a = 0;
+				for(int i = 0; i < delCoords.Count; i++){
+					point[a] = delCoords[i].X;
+					point[a+1] = delCoords[i].Y;
+					a = a+2;
+				}
 			}
 			return point;
 		}
 
-		public void pridajUlozenuCiaru(Zastavka z1, Zastavka z2, Point point){
-			delCoords.Add(point);
+		public void pridajUlozeneZastavky(Zastavka z1, Zastavka z2){
 			mojeZastavky.Add(z2);
 			mojeZastavky.Add(z1);
+		}
+
+		public void pridajUlozenePoint(Point point){
+			delCoords.Add(point);
 		}
 	}
 	
