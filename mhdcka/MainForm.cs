@@ -52,15 +52,23 @@ partial class MainForm : Form
 	void Button1Click(object sender, EventArgs e)
 	{
 		rezim = 1;
+		linkaClicked = 0;
+		holding = false;
+		deletingLine = false;
+		deletingZast = false;
+		level = 0;
+	
 		button6.Visible = true;
 		button7.Visible = true;
 		button8.Visible = true;
 		textBox1.Visible = false;
 		button9.Visible = false;
 		button10.Visible = false;
-		for(int i = 0; i < linky.Count; i++){
-			linky[i].mojeZastavky.Clear();
-			linky[i].delCoords.Clear();
+		linky.Clear();
+		
+		for (int i = 0; i < 9; i++)
+		{
+			linky.Add(new Linka(i+1, pens[i]));
 		}
 		zastavky.Clear();
 		Invalidate();
@@ -69,6 +77,9 @@ partial class MainForm : Form
 	void Button2Click(object sender, EventArgs e)
 	{
 		rezim = 2;
+				
+		button7.Visible = false;
+		button8.Visible = false;
 		
 		linky.Clear();
 		zastavky.Clear();
@@ -114,9 +125,12 @@ partial class MainForm : Form
 	{
 		rezim = 3;
 		button7.Visible = true;
+		button8.Visible = true;
 		textBox1.Visible = false;
 		button9.Visible = false;
 		button10.Visible = false;
+		Invalidate();
+		Update();
 	}
 
 	void Button4Click(object sender, EventArgs e)
