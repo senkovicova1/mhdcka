@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Drawing;
@@ -133,7 +133,17 @@ partial class MainForm : Form
 		Invalidate();
 		Update();
 	}
-
+/*
+	class TestWriter : StreamWriter{
+		
+		public MyWriter(Stream stream): base(stream){}
+		
+	    public override void Write(string value)
+	    {	
+	        
+	    }
+	}*/
+	
 	void Button4Click(object sender, EventArgs e)
 	{
 		rezim = 4;
@@ -428,7 +438,7 @@ partial class MainForm : Form
 		errorMsgs.Add("    Jedna alebo viac tvojich liniek sú rozkúzkované!\n        Nevieme vytvoriť otázky kým ich nespojíš.");
 	}
 	
-	void MainFormMouseClick(object sender, MouseEventArgs e)
+	void MainFormMouseClick(object sender, MouseEventArgs e) //nahrada 
 	{
 		if ((rezim == 3 || rezim ==1)) {
 			if (deletingLine && linky[linkaClicked-1].zmazCiaru(e.X, e.Y)){				
@@ -897,7 +907,38 @@ partial class MainForm : Form
 		}
 		return 0;
 	}
-
+	
+	
+	/*class FakePen : GeneralPen{
+		Color colour;
+		int Width;
+		...
+	}
+	
+	class Pen : GeneralPen{
+		Color colour; 
+		int Width;	
+		...
+	}
+	
+	[TestMethod]
+	public void testGetPoint()
+	{
+		Pen pen = new FakePen(Color.CadetBlue, 2);
+		Linka linkaA = new Linka(2, pen);
+		
+		Assert.AreEqual([], linka.getPoints());
+		
+		Point p1 = new Point(10,23);
+		Point p2 = new Point(224, -14);
+		
+		linkaA.pridajUlozenyPoint(p1);
+		linkaA.pridajUlozenyPoint(p2);
+		
+		Assert.AreEqual(p1, linka.getPoints()[0]);
+		Assert.AreEqual(p2, linka.getPoints()[1]);
+	}*/
+	
 	class Linka {		
 		public List<Zastavka> mojeZastavky;
 		public int name;
@@ -949,8 +990,8 @@ partial class MainForm : Form
 			} 
 					
 		}
-		
-		Point getCenter(int X1, int Y1, int X2, int Y2){
+		//nahrada nedostupneho parametra
+		Point getCenter(int X1, int Y1, int X2, int Y2){  				
 			double slope = ((double)(Y2 - Y1) / (double)(X2 - X1));
 			if (slope < 1 && slope > 0){
 				slope = 1;
@@ -1147,7 +1188,7 @@ partial class MainForm : Form
 	}
 	
 	//stub
-	class testZastavka{
+/*	class testZastavka{
 		int r = 10;
 
 		public Zastavka(){
@@ -1175,7 +1216,7 @@ partial class MainForm : Form
 			return 5;
 		}
 
-	}
+	}*/
 
 	class Zastavka {	
 		public int X, Y, r, name_number;

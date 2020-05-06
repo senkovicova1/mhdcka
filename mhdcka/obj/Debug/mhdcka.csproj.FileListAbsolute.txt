@@ -6,3 +6,11 @@ C:\Users\Setsumi\Documents\SharpDevelop Projects\mhdcka\mhdcka\bin\Debug\mhdcka.
 C:\Users\Setsumi\Documents\SharpDevelop Projects\mhdcka\mhdcka\bin\Debug\mhdcka.pdb
 C:\Users\Setsumi\Documents\SharpDevelop Projects\mhdcka\mhdcka\obj\Debug\mhdcka.exe
 C:\Users\Setsumi\Documents\SharpDevelop Projects\mhdcka\mhdcka\obj\Debug\mhdcka.pdb
+C:\Dokumenty\GitHub\mhdcka\mhdcka\bin\Debug\mhdcka.exe.config
+C:\Dokumenty\GitHub\mhdcka\mhdcka\bin\Debug\mhdcka.exe
+C:\Dokumenty\GitHub\mhdcka\mhdcka\bin\Debug\mhdcka.pdb
+C:\Dokumenty\GitHub\mhdcka\mhdcka\obj\Debug\mhdcka.csprojResolveAssemblyReference.cache
+C:\Dokumenty\GitHub\mhdcka\mhdcka\obj\Debug\MainForm.resources
+C:\Dokumenty\GitHub\mhdcka\mhdcka\obj\Debug\mhdcka.csproj.GenerateResource.Cache
+C:\Dokumenty\GitHub\mhdcka\mhdcka\obj\Debug\mhdcka.exe
+C:\Dokumenty\GitHub\mhdcka\mhdcka\obj\Debug\mhdcka.pdb
