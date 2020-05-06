@@ -34,6 +34,7 @@ partial class MainForm : Form
 	static bool deletingLine = false;
 	static bool deletingZast = false;
 	static bool namingZast = false;
+	static bool deleteMode = false;
 	
 	static bool[] errors = new bool[3];
 	static List<string> errorMsgs = new List<string>();
@@ -193,8 +194,8 @@ partial class MainForm : Form
 		Update();
 		
 	}	
-	void Button6Click(object sender, EventArgs e)
-	{
+
+	void changeButton6Name(){
 		if (deletingLine){
 			deletingLine = false;
 			button6.Text = "Zmazať čiaru";
@@ -202,18 +203,37 @@ partial class MainForm : Form
 			deletingLine = true;
 			button6.Text = "Ukončiť mazanie";
 		}
+	}
+
+	void Button6Click(object sender, EventArgs e)
+	{
+		changeButton6Name();
+		writeDeleteModeText();
 		Invalidate();
 		Update();
 	}
-	void Button7Click(object sender, EventArgs e)
-	{
-		if (deletingZast){
+
+	void changeButton7Name(){
+	if (deletingZast){
 			deletingZast = false;
 			button7.Text = "Zmazať zastávku";
 		} else {
 			deletingZast = true;
 			button7.Text = "Ukončiť mazanie";
 		}
+	}
+
+	void writeDeleteModeText(){
+		if(deletingZast || deletingLine)
+			deleteMode = true;
+		else
+			deleteMode = false;
+	}
+
+	void Button7Click(object sender, EventArgs e)
+	{
+		changeButton7Name();
+		writeDeleteModeText();
 		Invalidate();
 		Update();
 	}
@@ -284,12 +304,19 @@ partial class MainForm : Form
 		Invalidate();
 		Update();
 	}
+
+	void deleteModeWarning(Graphics g){
+		if(deleteMode)
+			g.DrawString("Si v móde mazania!", drawFont2, deleteBrush, 350, 100, null);
+	}
 	
 	void MainFormPaint(object sender, PaintEventArgs e)
 	{
 		Graphics g = e.Graphics;
 		
 		g.FillRectangle(background, 0,0, 865,600);
+
+		deleteModeWarning(g);
 		
 		if (zastavky.Count == 0){
 			g.DrawString("Kliknutím na plochu vytvoríš zastávku!", drawFont1, zastavkaBrush2, 300, 270, null);
@@ -1119,6 +1146,37 @@ partial class MainForm : Form
 		}
 	}
 	
+	//stub
+	class testZastavka{
+		int r = 10;
+
+		public Zastavka(){
+			susedia = new Dictionary<Zastavka, int>();
+			X = 20;			
+			Y = 10;
+			r = 10;
+			name = "5";
+			name_number = 5;
+		}		
+
+		public bool isClose(int X, int Y){
+			return Math.Sqrt((this.X - X)*(this.X - X) + (this.Y - Y)*(this.Y - Y)) < (r + 10 + 20);
+		}
+
+		public int getX(){
+			return 10;
+		}
+
+		public int getY(){
+			return 20;
+		}
+
+		public int getNameNumber(){
+			return 5;
+		}
+
+	}
+
 	class Zastavka {	
 		public int X, Y, r, name_number;
 		public string name;
@@ -1143,7 +1201,7 @@ partial class MainForm : Form
 		}
 		
 		public bool isClose(int X, int Y){
-			return Math.Sqrt((this.X - X)*(this.X - X) + (this.Y - Y)*(this.Y - Y)) < (r + 10 + 20);
+			return Math.Sqrt((this.X - X)*(this.X - X) + (this.Y - Y)*(this.Y - Y)) < (10 + 10 + 20);
 		}
 		
 		public void spoj(Zastavka z){
